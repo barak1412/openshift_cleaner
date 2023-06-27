@@ -7,8 +7,7 @@ import re
 API_HOST = 'https://api.sandbox-m2.ll9k.p1.openshiftapps.com:6443'
 NAMESPACE = os.environ['NAMESPACE']
 AUTH_TOKEN = os.environ['AUTH_TOKEN']
-DELETED_RESOURCES = ['services']
-RESOURCE_SELECTED_PHRASE = 'route'
+DELETED_RESOURCES_TYPES = ['route', 'service']
 
 # set resources to be deleted
 resources_by_url = {
@@ -18,10 +17,9 @@ resources_by_url = {
 }
 resources_by_pattern = {
     'pod': '^python-basic-([0-9]+?)-b[a-z]*$',
-    'route': '^route([0-9]+?)$'
+    'route': '^route([0-9]+?)$',
+    'service': '^service-([0-9]+?)$'
 }
-
-deleted_resources_types = ['route']
 
 # set header for delete request
 headers = {
@@ -39,10 +37,9 @@ for item in response.json()['items']:
     match = re.search(resources_by_pattern['pod'], pod_name)
     if match is not None:
         pods_ids.append(int(match.group(1)))
-print(pods_ids)
 
 # fetch every resource type and delete its relevant objects
-for resource in deleted_resources_types:
+for resource in DELETED_RESOURCES_TYPES:
     received_resource = requests.get(resources_by_url[resource], headers=headers, verify=False)
     for item in received_resource.json()['items']:
         resource_name = item['metadata']['name']
